@@ -9,6 +9,7 @@ import signal
 import threading
 import time
 import ssl
+from rpi_ws281x import PixelStrip, Color
 
 app = Flask(__name__)
 
@@ -19,24 +20,24 @@ picam2.start()
 
 LINK_FILE = "barcode_rfid_links.txt"
 
-MQTT_BROKER = "mqtt.axelpauwels.be"
-MQTT_PORT = 4568
+MQTT_BROKER = "mqtt.peetermans.dev"
+MQTT_PORT = 1884
 MQTT_TOPIC = "studenten"
 MQTT_USER = "iotuser"
 MQTT_PASS = "iotuser123"
 
 client = mqtt.Client()
-client.username_pw_set(MQTT_USER, MQTT_PASS)
-client = mqtt.Client()
-client.username_pw_set(MQTT_USER, MQTT_PASS)
+#client.username_pw_set(MQTT_USER, MQTT_PASS)
+#client = mqtt.Client()
+#client.username_pw_set(MQTT_USER, MQTT_PASS)
 
-client.tls_set(
-    ca_certs="/etc/ssl/certs/ca-certificates.crt",
-    certfile=None,
-    keyfile=None,
-    tls_version=ssl.PROTOCOL_TLS_CLIENT
-)
-client.tls_insecure_set(False)
+#client.tls_set(
+#    ca_certs="/etc/ssl/certs/ca-certificates.crt",
+#    certfile=None,
+#    keyfile=None,
+#    tls_version=ssl.PROTOCOL_TLS_CLIENT
+#)
+#client.tls_insecure_set(False)
 
 client.connect(MQTT_BROKER, MQTT_PORT, 60)
 client.loop_start()
@@ -56,13 +57,42 @@ def on_publish(client, userdata, mid):
 client.on_connect = on_connect
 client.on_publish = on_publish
 
+
+
+LED_COUNT = 5
+LED_PIN = 18
+LED_FREQ_HZ = 800000
+LED_DMA = 10
+LED_BRIGHTNESS = 50
+LED_CHANNEL = 0
+warm_white = Color(255, 160, 60)
+
+strip = PixelStrip(
+    LED_COUNT, LED_PIN, LED_FREQ_HZ,
+    LED_DMA, False, LED_BRIGHTNESS, LED_CHANNEL
+)
+strip.begin()
+
 def resetLeds():
     for i in range(LED_COUNT):
         strip.setPixelColor(i, Color(0, 0, 0))
+    strip.show()
 
 def warmWitteLeds():
     for i in range(4):
         strip.setPixelColor(i, warm_white)
+    strip.show()
+
+def setStatusLed(kleur):
+    strip.setPixelColor(4,kleur)
+    strip.show()
+# initialise leds bij start
+resetLeds()
+warmWitteLeds()
+
+
+
+
 
 
 def parse_barcode(raw: str):
@@ -96,6 +126,8 @@ def check_link():
         if last_barcode and last_rfid:
             if abs(last_barcode_time - last_rfid_time) <= 3:
                 save_link(last_barcode, last_rfid)
+                setStatusLed(Color(0, 255, 0)) 
+                threading.Timer(15, lambda: setStatusLed(Color(0, 0, 0))).start()
                 last_barcode = None
                 last_rfid = None
 
@@ -109,7 +141,7 @@ def generate():
         barcodes = decode(frame)
         for barcode in barcodes:
             x, y, w, h = barcode.rect
-            cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
+            cv2.rectangle(frame, (x, y, x+w, y+h), (0, 255, 0), 2)
 
             data = barcode.data.decode("utf-8")
             nummer, check, berekend = parse_barcode(data)
@@ -117,14 +149,18 @@ def generate():
             if nummer:
                 if check == berekend:
                     text = f"{nummer} OK"
+     
                     with lock:
                         last_barcode = nummer
                         last_barcode_time = time.time()
                     check_link()
                 else:
                     text = f"{nummer} FOUT (check {check}, berekend {berekend})"
+                    setStatusLed(Color(255, 0, 0))   # ❌ rood bij fout
             else:
                 text = f"{data} ???"
+                setStatusLed(Color(255, 160, 0))     # ⚠️ oranje bij onbekend
+                threading.Timer(3, lambda: setStatusLed(Color(0, 0, 0))).start()
 
             cv2.putText(frame, text, (x, y-10),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
@@ -134,6 +170,7 @@ def generate():
 
         yield (b'--frame\r\n'
                b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+
 
 @app.route('/video')
 def video():
@@ -166,6 +203,9 @@ def rfid_loop():
                     last_rfid = rfid_code
                     last_rfid_time = time.time()
                 check_link()
+        else:
+            setStatusLed(Color(255, 0, 0))
+            threading.Timer(3, lambda: setStatusLed(Color(0, 0, 0))).start()
         time.sleep(0.2)
 
 if __name__ == '__main__':
