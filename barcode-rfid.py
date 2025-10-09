@@ -1,7 +1,4 @@
-from flask import Flask, Response
-from picamera2 import Picamera2
 import cv2
-from pyzbar.pyzbar import decode
 import os
 import paho.mqtt.client as mqtt
 import MFRC522
@@ -9,35 +6,29 @@ import signal
 import threading
 import time
 import ssl
+from flask import Flask, Response
+from picamera2 import Picamera2
+from pyzbar.pyzbar import decode
 from rpi_ws281x import PixelStrip, Color
+from dotenv import load_dotenv
 
 app = Flask(__name__)
+load_dotenv()
 
 picam2 = Picamera2()
 config = picam2.create_preview_configuration()
 picam2.configure(config)
 picam2.start()
 
-LINK_FILE = "barcode_rfid_links.txt"
+LINK_FILE = os.getenv("LINK_FILE", "barcode_rfid_links.txt")
 
-MQTT_BROKER = "mqtt.peetermans.dev"
-MQTT_PORT = 1884
-MQTT_TOPIC = "studenten"
-MQTT_USER = "iotuser"
-MQTT_PASS = "iotuser123"
+MQTT_BROKER = os.getenv("MQTT_BROKER")
+MQTT_PORT = os.getenv("MQTT_PORT", 1884)
+MQTT_TOPIC = os.getenv("MQTT_TOPIC")
+MQTT_USER = os.getenv("MQTT_USER")
+MQTT_PASS = os.getenv("MQTT_PASS")
 
 client = mqtt.Client()
-#client.username_pw_set(MQTT_USER, MQTT_PASS)
-#client = mqtt.Client()
-#client.username_pw_set(MQTT_USER, MQTT_PASS)
-
-#client.tls_set(
-#    ca_certs="/etc/ssl/certs/ca-certificates.crt",
-#    certfile=None,
-#    keyfile=None,
-#    tls_version=ssl.PROTOCOL_TLS_CLIENT
-#)
-#client.tls_insecure_set(False)
 
 client.connect(MQTT_BROKER, MQTT_PORT, 60)
 client.loop_start()
@@ -56,8 +47,6 @@ def on_publish(client, userdata, mid):
 
 client.on_connect = on_connect
 client.on_publish = on_publish
-
-
 
 LED_COUNT = 5
 LED_PIN = 18
@@ -89,11 +78,6 @@ def setStatusLed(kleur):
 # initialise leds bij start
 resetLeds()
 warmWitteLeds()
-
-
-
-
-
 
 def parse_barcode(raw: str):
     if not raw.startswith("S"):
@@ -170,7 +154,6 @@ def generate():
 
         yield (b'--frame\r\n'
                b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
-
 
 @app.route('/video')
 def video():
