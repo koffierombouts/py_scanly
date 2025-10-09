@@ -1,4 +1,3 @@
-LINK_FILE="<link_file_name>"
 MQTT_BROKER="<mqtt_broker_domain>"
 MQTT_PORT=<mqtt_broker_port>
 MQTT_TOPIC="<mqqt_topic>"
