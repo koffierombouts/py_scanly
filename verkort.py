@@ -1,18 +1,20 @@
-from flask import Flask, Response
-from picamera2 import Picamera2
 import cv2, time, threading
-from pyzbar.pyzbar import decode
 import MFRC522, signal
-from rpi_ws281x import PixelStrip, Color
 import paho.mqtt.client as mqtt
 import RPi.GPIO as GPIO
+import os
+from flask import Flask, Response
+from picamera2 import Picamera2
+from pyzbar.pyzbar import decode
+from rpi_ws281x import PixelStrip, Color
+from dotenv import load_dotenv
 
 # --- MQTT setup ---
-MQTT_BROKER = "mqtt.peetermans.dev"
-MQTT_PORT = 1884
-MQTT_TOPIC = "studenten"
-MQTT_USER = "iotuser"
-MQTT_PASS = "iotuser123"
+MQTT_BROKER = os.getenv("MQTT_BROKER")
+MQTT_PORT = os.getenv("MQTT_PORT", 1884)
+MQTT_TOPIC = os.getenv("MQTT_TOPIC")
+MQTT_USER = os.getenv("MQTT_USER")
+MQTT_PASS = os.getenv("MQTT_PASS")
 
 client = mqtt.Client()
 client.connect(MQTT_BROKER, MQTT_PORT, 60)
