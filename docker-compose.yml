@@ -1,0 +1,16 @@
+version: "3.8"
+
+services:
+  py_scanly:
+    build: .
+    privileged: true
+    devices:
+      - "/dev/video0:/dev/video0"
+      - "/dev/gpiomem:/dev/gpiomem"
+      - "/dev/spidev0.0:/dev/spidev0.0"
+      - "/dev/spidev0.1:/dev/spidev0.1"
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env
+    restart: unless-stopped
