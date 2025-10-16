@@ -12,7 +12,7 @@ from dotenv import load_dotenv
 # --- MQTT setup ---
 load_dotenv() 
 MQTT_BROKER = os.getenv("MQTT_BROKER")
-MQTT_PORT = int(os.getenv("MQTT_PORT", 1884))
+MQTT_PORT = int(os.getenv("MQTT_PORT"))
 MQTT_TOPIC = os.getenv("MQTT_TOPIC")
 MQTT_USER = os.getenv("MQTT_USER")
 MQTT_PASS = os.getenv("MQTT_PASS")
