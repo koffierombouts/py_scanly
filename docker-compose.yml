@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   py_scanly:
     build: .
