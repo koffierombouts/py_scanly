@@ -4,6 +4,7 @@ import cv2
 from pyzbar.pyzbar import decode
 import os
 import paho.mqtt.client as mqtt
+from dotenv import load_dotenv
 
 app = Flask(__name__)
 
@@ -12,13 +13,13 @@ config = picam2.create_preview_configuration()
 picam2.configure(config)
 picam2.start()
 
-BARCODE_FILE = "barcodes.txt"
+BARCODE_FILE = os.getenv("LINK_FILE")
 
-MQTT_BROKER = "mqtt.axelpauwels.be"
-MQTT_PORT = 4568
-MQTT_TOPIC = "studenten"
-MQTT_USER = "iotuser"
-MQTT_PASS = "iotuser123"
+MQTT_BROKER = os.getenv("MQTT_BROKER")
+MQTT_PORT = os.getenv("MQTT_PORT", 1884)
+MQTT_TOPIC = os.getenv("MQTT_TOPIC")
+MQTT_USER = os.getenv("MQTT_USER")
+MQTT_PASS = os.getenv("MQTT_PASS")
 
 client = mqtt.Client()
 client.username_pw_set(MQTT_USER, MQTT_PASS)

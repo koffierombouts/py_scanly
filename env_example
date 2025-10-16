@@ -1,0 +1,5 @@
+MQTT_BROKER="<mqtt_broker_domain>"
+MQTT_PORT=<mqtt_broker_port>
+MQTT_TOPIC="<mqqt_topic>"
+MQTT_USER="<mqtt_user>"
+MQTT_PASS="<mqtt_password>"
