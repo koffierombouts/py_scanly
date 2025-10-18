@@ -27,22 +27,3 @@ EXPOSE 5000
 
 # Run the application
 CMD ["python", "verkort.py"]
-
-#
-# RUNTIME NOTES (Raspberry Pi):
-# - Give the container access to the camera and GPIO/SPI devices.
-# - The WS281x LED driver typically needs privileged access on Pi.
-# Example run (broad but simple):
-#   docker run --rm -it \
-#     --privileged \
-#     --device /dev/video0 \
-#     --device /dev/gpiomem \
-#     --device /dev/spidev0.0 \
-#     --device /dev/spidev0.1 \
-#     -v /run/udev:/run/udev:ro \
-#     -e MQTT_BROKER=192.168.1.10 \
-#     -e MQTT_PORT=1884 \
-#     -e MQTT_TOPIC=scanly/couplings \
-#     -e MQTT_USER=youruser -e MQTT_PASS=yourpass \
-#     -p 5000:5000 \
-#     your-image:tag
