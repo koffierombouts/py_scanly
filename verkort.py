@@ -10,11 +10,14 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # --- MQTT setup ---
+load_dotenv() 
 MQTT_BROKER = os.getenv("MQTT_BROKER")
 MQTT_PORT = int(os.getenv("MQTT_PORT", 1884))
 MQTT_TOPIC = os.getenv("MQTT_TOPIC")
 MQTT_USER = os.getenv("MQTT_USER")
 MQTT_PASS = os.getenv("MQTT_PASS")
+
+print(f"broker: {MQTT_BROKER}\nport: {MQTT_PORT}\ntopic: {MQTT_TOPIC}\nuser: {MQTT_USER}\npass: {MQTT_PASS}")
 
 client = mqtt.Client()
 if MQTT_USER and MQTT_PASS:
