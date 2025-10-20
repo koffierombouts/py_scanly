@@ -41,7 +41,7 @@ picam2.start()
 
 # --- LED setup ---
 # 1 LED voor camera-belichting (warm wit)
-LED_COUNT_CAM, LED_PIN_CAM = 1, 27
+LED_COUNT_CAM, LED_PIN_CAM = 1, 13
 # 4 LEDs, maar we gebruiken deze strip enkel als status-indicator (alle tegelijk zelfde kleur)
 LED_COUNT_STATUS, LED_PIN_STATUS = 4, 18
 
